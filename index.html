@@ -95,11 +95,7 @@ const BUSINESS_TYPES = [
     label: "servis",
     color: "#f27405",
     keywordList: [
-      "yetkili otomobil servis",
       "otomobil yetkili servis",
-      "araba servisi",
-      "yetkili servis",
-      "oto servis"
     ]
   },
   {
@@ -107,14 +103,6 @@ const BUSINESS_TYPES = [
     color: "#3483fa",
     keywordList: [
       "otomobil bayisi",
-      "oto bayii",
-      "araba bayisi",
-      "yetkili bayi",
-      "oto bayi",
-      "resmi bayi",
-      "araç bayisi",
-      "sıfır otomobil bayii",
-      "sıfır araç bayisi"
     ]
   }
 ];
@@ -181,7 +169,7 @@ function fetchAllPages(keyword, color, key, callback) {
   function processPage(pageToken) {
     const request = {
       location: userPos,
-      radius: 5000,
+      radius: 10000,
       keyword: keyword,
       ...(pageToken ? { pageToken } : {})
     };
