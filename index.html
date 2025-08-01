@@ -22,7 +22,7 @@
       overflow: hidden;
     }
     .container {
-      max-width: 540px;
+      max-width: 1000px;
       width: 100vw;
       margin: 0 auto;
       min-height: 100vh;
@@ -40,8 +40,8 @@
     .tab {
       flex: 1;
       text-align: center;
-      padding: 13px 0 13px;
-      font-size: 1.01rem;
+      padding: 15px 0 15px;
+      font-size: 1.09rem;
       font-weight: 600;
       color: var(--color-primary);
       background: #fff;
@@ -64,8 +64,6 @@
       background: var(--color-blue);
       border-bottom-color: var(--color-blue);
     }
-
-    /* FİLTRE KUTUSU */
     .filter-row {
       width: calc(100% - 30px);
       margin: 10px auto 7px auto;
@@ -104,7 +102,6 @@
     }
     #mapWrap {
       width: 100%;
-      /* Toplamda: sekmeler(51px) + filtre(37px) = 88px */
       height: calc(100vh - 88px);
       position: relative;
       max-width: 540px;
@@ -121,9 +118,8 @@
       background: #fff3eb; color: #c86e01; font-weight: 600; font-size: 1.13em;
       padding: 22px 28px; border-radius: 14px; z-index: 222; box-shadow: 0 3px 22px #ffc98a38;
     }
-    /* Modal (popup) ve route info, kalan stil aynı */
     .modal-bg {
-      display: none; 
+      display: none;
       position:fixed; left:0;top:0;width:100vw;height:100vh;z-index:9999;
       background: rgba(41,18,0,0.23);
       align-items: center; justify-content: center;
@@ -167,32 +163,58 @@
       left: 0;
       bottom: 0;
       width: 100vw;
-      max-width: 540px;
+      max-width: 100vw;
       margin: 0 auto;
       z-index: 10001;
       display: none;
+      pointer-events: none;
     }
     .route-info-inner {
       background: var(--color-primary);
       color: #fff;
-      border-radius: 16px 16px 0 0;
-      box-shadow: 0 -3px 22px #ffc98a50;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -5px 22px #ffc98a70;
       font-weight: 600;
       font-size: 1.13em;
-      padding: 15px 0 13px 0;
+      padding: 13px 11px 15px 18px;
       text-align: center;
       margin: 0 auto;
-      max-width: 540px;
+      max-width: 650px;
       width: 100vw;
+      min-width: 220px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 32px;
-      transition: background .16s;
+      gap: 28px;
+      pointer-events: auto;
+      transition: background .18s, box-shadow .18s;
     }
     .route-info-inner.bayi {background: var(--color-blue);}
-    .route-dist {font-size:1.09em;}
-    .route-dur {font-size:1.09em;}
+    .route-dist, .route-dur {
+      font-size:1.06em;
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+    .route-center-btn {
+      background: #fff;
+      color: var(--color-primary);
+      border: none;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: .98em;
+      margin-left: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: none;
+      transition: background .16s;
+      display: flex; align-items: center; gap:4px;
+    }
+    .route-info-inner.bayi .route-center-btn { color: var(--color-blue);}
+    .route-center-btn:active { background: #ffe2c2;}
     .route-cancel-btn {
       background: #fff;
       color: var(--color-primary);
@@ -200,22 +222,30 @@
       border-radius: 9px;
       font-weight: 700;
       font-size: .98em;
-      margin-left: 23px;
+      margin-left: 9px;
       padding: 8px 16px;
       cursor: pointer;
       outline: none;
       box-shadow: none;
       transition: background .16s;
+      display: flex; align-items: center; gap:5px;
     }
     .route-info-inner.bayi .route-cancel-btn { color: var(--color-blue);}
     .route-cancel-btn:active { background: #ffe2c2;}
-    @media (max-width: 1000px) {
+    @media (max-width: 700px) {
       .container, #mapWrap { max-width: 100vw; }
-      .modal-inner { min-width: 0; max-width: 99vw;}
-      .tabs {overflow-x: auto;}
-      .tab {min-width: 110px;}
-      #routeInfoBox, .route-info-inner { max-width: 100vw;}
-      .filter-row { width: calc(100vw - 30px);}
+      .route-info-inner {
+        max-width: 100vw;
+        padding: 11px 4px 13px 7px;
+        font-size: 1.01em;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 9px;
+      }
+      #routeInfoBox {max-width: 100vw;}
+    }
+    @media (max-width: 1200px) {
+      .container {max-width: 100vw;}
     }
   </style>
 </head>
@@ -251,7 +281,7 @@ let currentTab = 'servis';
 let currentVehicle = 'all';
 let map, placesServis = [], placesBayi = [], markers = [], userMarker = null, userPos = null;
 let directionsService, directionsRenderer, activeRouteType = null, activeRouteDest = null, routeInterval = null;
-let modalOpen = false;
+let modalOpen = false, activeRouteBounds = null;
 
 const KEYWORDS = {
   servis: {
@@ -428,19 +458,42 @@ function updateRouteLive(){
     if(status === google.maps.DirectionsStatus.OK){
       directionsRenderer.setDirections(result);
       const leg = result.routes[0].legs[0];
+      // bounds ile fit için kaydet
+      activeRouteBounds = result.routes[0].bounds;
       showRouteInfoBox(leg.distance.text, leg.duration.text, activeRouteType);
     }
   });
 }
 
+// YOLU ORTALAMA
+window.centerRoute = function(){
+  if(map && activeRouteBounds){
+    map.fitBounds(activeRouteBounds);
+  }
+}
+
+// GELİŞMİŞ ALT KUTU (şık, responsive, ek butonlu)
 function showRouteInfoBox(distance, duration, type){
   const routeBox = document.getElementById('routeInfoBox');
   const routeInner = document.getElementById('routeInfoInner');
   routeInner.className = "route-info-inner"+(type==='bayi'?' bayi':'');
   routeInner.innerHTML = `
-    <span class="route-dist"><b>Mesafe:</b> ${distance}</span>
-    <span class="route-dur"><b>Süre:</b> ${duration}</span>
-    <button class="route-cancel-btn" onclick="cancelRoute()">Rota İptal</button>
+    <span class="route-dist">
+      <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M6.5 7a5.5 5.5 0 1 1 11 0c0 4.26-4.49 9.45-5.02 10.06a.75.75 0 0 1-1.14 0C10.99 16.45 6.5 11.26 6.5 7zm5.5-4a7.5 7.5 0 0 0-7.5 7.5c0 5.41 6.38 12.35 6.65 12.63a2.25 2.25 0 0 0 3.2 0c.27-.28 6.65-7.22 6.65-12.63A7.5 7.5 0 0 0 12 3z"/></svg>
+      <b>Mesafe:</b> ${distance}
+    </span>
+    <span class="route-dur">
+      <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.25A8.75 8.75 0 1 0 20.75 12 8.76 8.76 0 0 0 12 3.25zm0 16A7.25 7.25 0 1 1 19.25 12 7.26 7.26 0 0 1 12 19.25z"/><path fill="currentColor" d="M12 7.75a.75.75 0 0 1 .75.75v2.94l2.23 1.29a.75.75 0 0 1-.76 1.3l-2.43-1.41a.75.75 0 0 1-.39-.65V8.5A.75.75 0 0 1 12 7.75z"/></svg>
+      <b>Süre:</b> ${duration}
+    </span>
+    <button class="route-center-btn" onclick="centerRoute()">
+      <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 6a1 1 0 0 1 1 1v3.586l2.293 2.293a1 1 0 1 1-1.415 1.415l-2.586-2.586A1 1 0 0 1 11 10V7a1 1 0 0 1 1-1zm0-4a10 10 0 1 1-7.07 2.93A10 10 0 0 1 12 2zm0 2A8 8 0 1 0 20 12a8 8 0 0 0-8-8z"/></svg>
+      Rota Ortala
+    </button>
+    <button class="route-cancel-btn" onclick="cancelRoute()">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M17.71 6.29a1 1 0 0 1 0 1.42L13.42 12l4.29 4.29a1 1 0 0 1-1.42 1.42L12 13.42l-4.29 4.29a1 1 0 0 1-1.42-1.42L10.58 12 6.29 7.71a1 1 0 1 1 1.42-1.42L12 10.58l4.29-4.29a1 1 0 0 1 1.42 0z"/></svg>
+      Rota İptal
+    </button>
   `;
   routeBox.style.display = "block";
 }
