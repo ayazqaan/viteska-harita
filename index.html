@@ -181,7 +181,7 @@ function fetchAllPages(keyword, color, key, callback) {
   function processPage(pageToken) {
     const request = {
       location: userPos,
-      radius: 10000,
+      radius: 5000,
       keyword: keyword,
       ...(pageToken ? { pageToken } : {})
     };
