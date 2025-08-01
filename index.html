@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Viteska – Yetkili Servis & Bayi Harita</title>
+  <title>Viteska – Servis & Bayi Harita</title>
   <style>
     :root {
       --color-primary: #f27405;
-      --color-accent: #db6000;
       --color-blue: #3483fa;
       --color-bg: #fff;
       --color-border: #ffe2c2;
+      --color-shadow: #ffe5d633;
       --font: 'Segoe UI', sans-serif;
     }
     html, body {
@@ -21,87 +21,297 @@
       min-height: 100vh;
       overflow: hidden;
     }
-    #mapWrap {width:100vw; height:100vh; position:relative;}
-    #map { width: 100vw; height: 100vh; border-radius: 0; box-shadow: none;}
-    .info-strip {
-      position: absolute; left: 50%; top: 13px; transform: translateX(-50%);
-      background: #fff8f2d8; color: #9b590a; padding: 7px 18px; border-radius: 19px; box-shadow: 0 1px 9px #ffc98a3c;
-      font-weight: 700; font-size: 1.04em; z-index: 99; display: flex; gap: 20px; align-items: center;
-      border: 1.5px solid #ffe2c2;
+    .container {
+      max-width: 540px;
+      width: 100vw;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .info-dot {width:15px; height:15px; border-radius:50%; display:inline-block; margin-right:5px;}
-    .dot-orange {background: var(--color-primary);}
-    .dot-blue {background: var(--color-blue);}
+    .tabs {
+      display: flex;
+      width: 100%;
+      background: #fff;
+      border-bottom: 2px solid var(--color-border);
+      z-index: 20;
+      position: relative;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 13px 0 13px;
+      font-size: 1.01rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      background: #fff;
+      border-bottom: 3px solid var(--color-border);
+      cursor: pointer;
+      user-select: none;
+      min-width: 1px;
+      white-space: nowrap;
+      transition: background .17s;
+    }
+    .tab.active {
+      color: #fff;
+      border-bottom-color: var(--color-primary);
+    }
+    .tab.active[data-tab="servis"] {
+      background: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+    }
+    .tab.active[data-tab="bayi"] {
+      background: var(--color-blue);
+      border-bottom-color: var(--color-blue);
+    }
+
+    /* FİLTRE KUTUSU */
+    .filter-row {
+      width: calc(100% - 30px);
+      margin: 10px auto 7px auto;
+      padding: 15px 0 15px 0;
+      display: flex;
+      gap: 70px;
+      align-items: center;
+      justify-content: flex-start;
+      background: #fff8f2d8;
+      border-radius: 10px;
+      border: 3px solid #ffe2c2;
+      font-weight: 700;
+      font-size: 1.07em;
+      color: #e36901;
+    }
+    .filter-label { margin-left: 12px; color: #ba6c01;}
+    .filter-select {
+      border: 1.4px solid var(--color-primary);
+      border-radius: 8px;
+      font-size: 1em;
+      padding: 6px 14px;
+      background: #fff;
+      color: #b76d14;
+      font-weight: 600;
+      outline: none;
+    }
+    .page {
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      background: var(--color-bg);
+      display: block;
+    }
+    #mapWrap {
+      width: 100%;
+      /* Toplamda: sekmeler(51px) + filtre(37px) = 88px */
+      height: calc(100vh - 88px);
+      position: relative;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
     #mapLoading {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
       background: #fff3eb; color: #c86e01; font-weight: 600; font-size: 1.13em;
       padding: 22px 28px; border-radius: 14px; z-index: 222; box-shadow: 0 3px 22px #ffc98a38;
     }
-    /* Modal (Popup) */
+    /* Modal (popup) ve route info, kalan stil aynı */
     .modal-bg {
-      display: none; position:fixed; left:0;top:0;width:100vw;height:100vh;z-index:9999;
-      background: rgba(41,18,0,0.34);
+      display: none; 
+      position:fixed; left:0;top:0;width:100vw;height:100vh;z-index:9999;
+      background: rgba(41,18,0,0.23);
       align-items: center; justify-content: center;
       transition: opacity .18s;
     }
-    .modal-bg.active { display:flex; animation:fadein .22s; }
-    @keyframes fadein {0%{opacity:0;} 100%{opacity:1;}}
+    .modal-bg.active { display:flex; }
     .modal-inner {
       background: #fff7ee;
-      border-radius: 14px;
-      padding: 23px 17px 13px 17px;
-      min-width: 300px;
+      border-radius: 13px;
+      padding: 17px 14px 13px 17px;
+      min-width: 310px;
       max-width: 95vw;
       box-shadow: 0 7px 36px #d2630040;
       position: relative;
       animation: pop .16s;
+      margin: 20px;
     }
     @keyframes pop {0%{transform:scale(.92);} 100%{transform:scale(1);}}
     .modal-close {
-      position:absolute; right:11px; top:9px; background:none; border:none; font-size:2.0em; color:#e07000; cursor:pointer; z-index:9;
+      position:absolute; right:12px; top:9px; background:none; border:none; font-size:2.0em; color:#e07000; cursor:pointer; z-index:9;
       line-height:1; font-weight:700;
     }
-    .place-photo {width: 100%; max-height: 210px; border-radius: 11px; object-fit: cover; margin-bottom: 10px;}
-    .modal-main-title {font-size: 1.23em; font-weight:700; color: var(--color-primary); margin-bottom: 6px;}
-    .place-rating {font-weight: 700; color: #e08e1e;}
-    .place-status {font-weight: 700; margin-left: 10px;}
-    .place-status.open {color: #1aa331;}
-    .place-status.closed {color: #e53935;}
-    .place-link {display: inline-block; margin-top: 8px; color: #007aff;}
+    .place-photo {width: 100%; max-height: 200px; border-radius: 11px; object-fit: cover; margin-bottom: 7px;}
+    .modal-main-title {font-size: 1.18em; font-weight:700; color: var(--color-primary); margin-bottom: 6px;}
+    .modal-main-title.bayi { color: var(--color-blue);}
+    .modal-detail {color:#7b4716;font-size:.98em;margin-bottom:5px;}
+    .modal-city {color:#b87904;font-size:.98em;margin-bottom:4px;}
+    .modal-actions {margin-top:8px;}
     .modal-btn {
       background: var(--color-primary); color:#fff; border:none;
-      padding: 8px 18px; border-radius: 9px; font-weight:600; font-size:1.08em;
-      margin-right:8px; margin-top:9px; cursor:pointer; box-shadow:none; outline:none;
+      padding: 8px 18px; border-radius: 9px; font-weight:600; font-size:1.07em;
+      margin-right:8px; margin-top:6px; cursor:pointer; box-shadow:none; outline:none;
       display: inline-block;
+      text-decoration:none;
     }
-    .modal-btn:active { background: #db6000; }
-    .directions-panel {
-      margin: 10px 0 0 0;
-      background: #fffaec;
-      padding: 7px 12px;
-      border-radius: 8px;
-      font-size: 1.03rem;
-      color: #b1790d;
+    .modal-btn.bayi {background: var(--color-blue);}
+    .modal-btn:active { opacity: 0.88; }
+    .stars {color:#e08e1e;font-size:1.11em;margin-bottom:7px;letter-spacing:.08em;}
+    #routeInfoBox {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+      max-width: 540px;
+      margin: 0 auto;
+      z-index: 10001;
+      display: none;
     }
-    @media (max-width: 700px) {
+    .route-info-inner {
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -3px 22px #ffc98a50;
+      font-weight: 600;
+      font-size: 1.13em;
+      padding: 15px 0 13px 0;
+      text-align: center;
+      margin: 0 auto;
+      max-width: 540px;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      transition: background .16s;
+    }
+    .route-info-inner.bayi {background: var(--color-blue);}
+    .route-dist {font-size:1.09em;}
+    .route-dur {font-size:1.09em;}
+    .route-cancel-btn {
+      background: #fff;
+      color: var(--color-primary);
+      border: none;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: .98em;
+      margin-left: 23px;
+      padding: 8px 16px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: none;
+      transition: background .16s;
+    }
+    .route-info-inner.bayi .route-cancel-btn { color: var(--color-blue);}
+    .route-cancel-btn:active { background: #ffe2c2;}
+    @media (max-width: 1000px) {
+      .container, #mapWrap { max-width: 100vw; }
       .modal-inner { min-width: 0; max-width: 99vw;}
+      .tabs {overflow-x: auto;}
+      .tab {min-width: 110px;}
+      #routeInfoBox, .route-info-inner { max-width: 100vw;}
+      .filter-row { width: calc(100vw - 30px);}
     }
   </style>
 </head>
 <body>
-<div id="mapWrap">
-  <div id="map"></div>
-  <div class="info-strip">
-    <span class="info-dot dot-orange"></span> Yetkili Servis
-    <span class="info-dot dot-blue"></span> Bayi
+<div class="container">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="servis" onclick="setTab('servis')">Yetkili Servis</div>
+    <div class="tab" data-tab="bayi" onclick="setTab('bayi')">Oto Bayi</div>
   </div>
-  <div id="mapLoading" class="loading" style="display:none;">Harita yükleniyor...</div>
+  <!-- FİLTRE BURADA -->
+  <div class="filter-row" id="filterRow">
+    <span class="filter-label">Vasıta Türü:</span>
+    <select class="filter-select" id="vehicleFilter">
+      <option value="Oto">Otomobil</option>
+      <option value="Ticari">Ticari Araç</option>
+      <option value="Kamyon">Kamyon / Tır</option>
+      <option value="Otobüs">Otobüs</option>
+      <option value="Motosiklet">Motosiklet</option>
+      <option value="Traktör">Traktör</option>
+    </select>
+  </div>
+  <div class="page active" id="harita">
+    <div id="mapWrap">
+      <div id="map"></div>
+      <div id="mapLoading" class="loading" style="display:none;">Harita yükleniyor...</div>
+    </div>
+  </div>
 </div>
 <div class="modal-bg" id="modalBg"></div>
+<div id="routeInfoBox"><div class="route-info-inner" id="routeInfoInner"></div></div>
 <script>
-let map, placesServis = [], placesBayi = [], markers = [], userPos = null, directionsService, directionsRenderer;
+let currentTab = 'servis';
+let currentVehicle = 'all';
+let map, placesServis = [], placesBayi = [], markers = [], userMarker = null, userPos = null;
+let directionsService, directionsRenderer, activeRouteType = null, activeRouteDest = null, routeInterval = null;
+let modalOpen = false;
 
-// HARİTA BAŞLATICI
+const KEYWORDS = {
+  servis: {
+    all: "Oto Servis",
+    Oto: "Oto Servis",
+    Ticari: "Ticari Araç Servis",
+    Kamyon: "Kamyon Servis",
+    Motosiklet: "Motosiklet Servis",
+    Traktör: "Traktör Servis"
+  },
+  bayi: {
+    all: "Oto Bayi",
+    Oto: "Oto Bayi",
+    Ticari: "Ticari Araç Bayi",
+    Kamyon: "Kamyon Bayi",
+    Motosiklet: "Motosiklet Bayi",
+    Traktör: "Traktör Bayi"
+  }
+};
+
+function setTab(tab) {
+  if(modalOpen) return;
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  searchPlaces();
+  if (activeRouteType) updateRouteInfoBox();
+}
+
+document.getElementById('vehicleFilter').addEventListener('change', function() {
+  currentVehicle = this.value;
+  searchPlaces();
+});
+
+function searchPlaces() {
+  if (!map || !userPos) return;
+  const placesService = new google.maps.places.PlacesService(map);
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+  if(currentTab==='servis'){
+    placesService.nearbySearch({
+      location: userPos,
+      radius: 30000,
+      keyword: KEYWORDS.servis[currentVehicle] || "Oto Servis"
+    }, (results, status) => {
+      placesServis = (status === google.maps.places.PlacesServiceStatus.OK) ? results : [];
+      renderMarkers();
+    });
+  } else {
+    placesService.nearbySearch({
+      location: userPos,
+      radius: 30000,
+      keyword: KEYWORDS.bayi[currentVehicle] || "Oto Bayi"
+    }, (results, status) => {
+      placesBayi = (status === google.maps.places.PlacesServiceStatus.OK) ? results : [];
+      renderMarkers();
+    });
+  }
+}
+
 function initMap() {
   document.getElementById('mapLoading').style.display = '';
   navigator.geolocation.getCurrentPosition(pos => {
@@ -109,46 +319,19 @@ function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
       center: userPos, zoom: 13, mapTypeControl: false, streetViewControl: false, fullscreenControl: false
     });
-    // Kullanıcı konumu marker
-    new google.maps.Marker({
-      map, position: userPos,
-      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#14a001", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2 },
-      title: "Şu anki konumun"
+    userMarker = new google.maps.Marker({
+      map,
+      position: userPos,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: "#18b501", fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2 },
+      title: "Konumunuz"
     });
     directionsService = new google.maps.DirectionsService();
-    directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true, polylineOptions: { strokeColor: "#db6000", strokeWeight: 5 } });
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      suppressMarkers: true,
+      polylineOptions: { strokeColor: "#f27405", strokeWeight: 5 }
+    });
     directionsRenderer.setMap(map);
-
-    // SADECE OTOMOTİV YETKİLİ SERVİS ve BAYİ
-    const placesService = new google.maps.places.PlacesService(map);
-    // Yetkili Servis
-    placesService.nearbySearch({
-      location: userPos,
-      radius: 30000,
-      keyword: "oto yetkili servis",
-      type: "car_repair"
-    }, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        placesServis = results.filter(place =>
-          /(oto|otomobil|araba|car)/i.test(place.name + " " + (place.types||[]).join(" "))
-        );
-        renderMarkers();
-      }
-    });
-    // Bayi
-    placesService.nearbySearch({
-      location: userPos,
-      radius: 30000,
-      keyword: "otomobil bayi",
-      type: "car_dealer"
-    }, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        placesBayi = results.filter(place =>
-          /(oto|otomobil|araba|car)/i.test(place.name + " " + (place.types||[]).join(" "))
-        );
-        renderMarkers();
-      }
-    });
+    searchPlaces();
     document.getElementById('mapLoading').style.display = 'none';
   }, ()=>{
     alert('Konum alınamadı. Lütfen konum izni verin.');
@@ -156,65 +339,62 @@ function initMap() {
   });
 }
 
-// MARKERLARI GÖSTER
 function renderMarkers() {
-  markers.forEach(m => m.setMap(null)); markers = [];
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+  const places = currentTab==='servis' ? placesServis : placesBayi;
   if(!map) return;
-  // Yetkili Servis (turuncu)
-  placesServis.forEach(place => {
+  places.forEach(place => {
     const marker = new google.maps.Marker({
-      map, position: place.geometry.location, title: place.name,
-      icon: { path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, scale: 6, fillColor: "#f27405", fillOpacity: 1, strokeWeight: 1, strokeColor: "#fff" }
+      map,
+      position: place.geometry.location,
+      title: place.name,
+      icon: {
+        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+        scale: 6,
+        fillColor: currentTab==='servis' ? "#f27405" : "#3483fa",
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: "#fff"
+      }
     });
-    marker.addListener('click', ()=>showPlaceDetail(place.place_id, 'servis'));
-    markers.push(marker);
-  });
-  // Bayi (mavi)
-  placesBayi.forEach(place => {
-    const marker = new google.maps.Marker({
-      map, position: place.geometry.location, title: place.name,
-      icon: { path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, scale: 6, fillColor: "#3483fa", fillOpacity: 1, strokeWeight: 1, strokeColor: "#fff" }
-    });
-    marker.addListener('click', ()=>showPlaceDetail(place.place_id, 'bayi'));
+    marker.addListener('click', ()=>showPlaceDetail(place.place_id, currentTab));
     markers.push(marker);
   });
 }
 
-// DETAYLI POPUP VE ROTA
 function showPlaceDetail(placeId, type) {
   const modalBg = document.getElementById('modalBg');
+  modalOpen = true;
   modalBg.innerHTML = `<div class="modal-inner"><div style="padding:29px 0; text-align:center;">Yükleniyor...</div></div>`;
   modalBg.classList.add('active');
   const placesService = new google.maps.places.PlacesService(map);
   placesService.getDetails({
     placeId,
-    fields: ['name','rating','photos','formatted_address','vicinity','formatted_phone_number','website','opening_hours','geometry','types']
+    fields: [
+      'name','rating','photos','formatted_address','vicinity','formatted_phone_number',
+      'website','opening_hours','geometry','types'
+    ]
   }, (place, status)=>{
     if(status !== google.maps.places.PlacesServiceStatus.OK) return;
-    let photoUrl = place.photos && place.photos[0] ? place.photos[0].getUrl({maxWidth:410,maxHeight:210}) : '';
-    let isOpen = place.opening_hours && typeof place.opening_hours.isOpen === 'function' ? place.opening_hours.isOpen() : undefined;
-    let rating = place.rating ? `<span class="place-rating">★ ${place.rating.toFixed(1)}</span>` : '';
-    let openHtml = (isOpen !== undefined) ? `<span class="place-status ${isOpen?'open':'closed'}">${isOpen?'Açık':'Kapalı'}</span>` : '';
-    let website = place.website ? `<a href="${place.website}" class="place-link" target="_blank">Web Sitesi</a>` : '';
-    let phone = place.formatted_phone_number ? `<a href="tel:${place.formatted_phone_number.replace(/\s+/g,'')}" class="modal-btn" style="background:#ececec; color:#e36901; margin-top:4px; font-weight:600;">Ara</a>` : '';
+    let photoUrl = place.photos && place.photos[0] ? place.photos[0].getUrl({maxWidth:410,maxHeight:200}) : '';
+    let stars = place.rating ? `<div class="stars">★ ${place.rating.toFixed(1)}</div>` : '';
     let address = place.formatted_address || place.vicinity || '';
-    let directionsBtn = `<button class="modal-btn" style="margin-top:9px;" onclick="calcRoute(${place.geometry.location.lat()},${place.geometry.location.lng()},'${place.name.replace(/'/g,"\\'")}')">Rota Oluştur</button>`;
-
+    let phone = place.formatted_phone_number ? `<a href="tel:${place.formatted_phone_number.replace(/\s+/g,'')}" class="modal-btn${type==='bayi'?' bayi':''}">Ara</a>` : '';
+    let directionsBtn = `<button class="modal-btn${type==='bayi'?' bayi':''}" style="margin-top:9px;" onclick="calcRoute(${place.geometry.location.lat()},${place.geometry.location.lng()},'${place.name.replace(/'/g,"\\'")}', '${type}')">Rota Oluştur</button>`;
     modalBg.innerHTML = `
       <div class="modal-inner">
         <button class="modal-close" onclick="closeModal()">×</button>
         <div class="modal-content">
-          ${photoUrl?`<img src="${photoUrl}" class="place-photo" alt="Servis Görseli">`:""}
-          <div class="modal-main-title">${place.name||''}</div>
-          <div>${rating}${openHtml}</div>
-          <div class="modal-detail" style="margin-top:8px;"><b>Adres:</b> ${address}</div>
+          ${photoUrl?`<img src="${photoUrl}" class="place-photo" alt="Görsel">`:""}
+          <div class="modal-main-title${type==='bayi'?' bayi':''}">${place.name||''}</div>
+          ${stars}
+          <div class="modal-detail">${address}</div>
           ${place.formatted_phone_number?`<div class="modal-city"><b>Telefon:</b> ${place.formatted_phone_number}</div>`:""}
           <div class="modal-actions">
             ${directionsBtn}
-            ${website}
             ${phone}
           </div>
-          <div id="directionsPanel"></div>
         </div>
       </div>
     `;
@@ -222,27 +402,71 @@ function showPlaceDetail(placeId, type) {
 }
 window.closeModal = function(){
   document.getElementById('modalBg').classList.remove('active');
-  setTimeout(()=>{document.getElementById('modalBg').innerHTML='';}, 300);
-};
-window.calcRoute = function(destLat, destLng, destName){
+  setTimeout(()=>{document.getElementById('modalBg').innerHTML='';modalOpen=false;}, 280);
+}
+
+window.calcRoute = function(destLat, destLng, destName, type){
   if(!userPos){ alert('Konum alınamadı.'); return; }
-  const request = {
+  activeRouteType = type;
+  activeRouteDest = {lat: destLat, lng: destLng};
+  const polyColor = type==='bayi' ? "#3483fa" : "#f27405";
+  directionsRenderer.setOptions({polylineOptions:{strokeColor:polyColor,strokeWeight:5}});
+  updateRouteLive();
+  if(routeInterval) clearInterval(routeInterval);
+  routeInterval = setInterval(updateRouteLive, 3000);
+  closeModal();
+};
+
+function updateRouteLive(){
+  if(!userPos || !activeRouteDest) return;
+  const req = {
     origin: userPos,
-    destination: { lat: destLat, lng: destLng },
+    destination: activeRouteDest,
     travelMode: google.maps.TravelMode.DRIVING
   };
-  directionsService.route(request, (result, status)=>{
+  directionsService.route(req, (result, status)=>{
     if(status === google.maps.DirectionsStatus.OK){
       directionsRenderer.setDirections(result);
-      const route = result.routes[0].legs[0];
-      document.getElementById('directionsPanel').innerHTML = `
-        <div class="directions-panel">
-          <b>Mesafe:</b> ${route.distance.text} &nbsp;&nbsp; <b>Süre:</b> ${route.duration.text}
-        </div>
-      `;
+      const leg = result.routes[0].legs[0];
+      showRouteInfoBox(leg.distance.text, leg.duration.text, activeRouteType);
     }
   });
+}
+
+function showRouteInfoBox(distance, duration, type){
+  const routeBox = document.getElementById('routeInfoBox');
+  const routeInner = document.getElementById('routeInfoInner');
+  routeInner.className = "route-info-inner"+(type==='bayi'?' bayi':'');
+  routeInner.innerHTML = `
+    <span class="route-dist"><b>Mesafe:</b> ${distance}</span>
+    <span class="route-dur"><b>Süre:</b> ${duration}</span>
+    <button class="route-cancel-btn" onclick="cancelRoute()">Rota İptal</button>
+  `;
+  routeBox.style.display = "block";
+}
+window.cancelRoute = function(){
+  directionsRenderer.set('directions', null);
+  document.getElementById('routeInfoBox').style.display = "none";
+  activeRouteType = null; activeRouteDest = null;
+  if(routeInterval) clearInterval(routeInterval);
+  routeInterval = null;
 };
+
+setInterval(()=>{
+  if (navigator.geolocation && activeRouteType) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const newUserPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      userPos = newUserPos;
+      if(userMarker) userMarker.setPosition(newUserPos);
+      if(activeRouteType && directionsRenderer && directionsRenderer.getDirections()){
+        const dir = directionsRenderer.getDirections();
+        const dest = dir.routes[0].legs[0].end_location;
+        window.calcRoute(dest.lat(), dest.lng(), '', activeRouteType);
+      }
+    });
+  }
+}, 3000);
+
 window.initMap = initMap;
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-MpFcUMdFif1OPAGWcBhmWjWDPaM7Qz0&libraries=places&callback=initMap" async defer></script>
