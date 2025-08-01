@@ -5,261 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Viteska – Servis & Bayi Harita</title>
   <style>
-        * {
-      -webkit-tap-highlight-color: transparent !important;
-      -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-      outline: none !important;
-      box-shadow: none !important;
-    }
-    button, .quick-box, .btn-menu, .menu-list a, .ad-row button {
-      -webkit-tap-highlight-color: transparent !important;
-      -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-      outline: none !important;
-      box-shadow: none !important;
-      user-select: none;
-    }
     :root {
       --color-primary: #f27405;
       --color-blue: #3483fa;
+      --color-green: #24c257;
+      --color-red: #e51d1d;
+      --color-black: #171717;
+      --color-yellow: #ffd600;
       --color-bg: #fff;
       --color-border: #ffe2c2;
-      --color-shadow: #ffe5d633;
       --font: 'Segoe UI', sans-serif;
     }
-    html, body {
-      margin: 0; padding: 0;
-      font-family: var(--font);
-      background: var(--color-bg);
-      width: 100vw; height: 100vh;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    .container {
-      max-width: 1000px;
-      width: 100vw;
-      margin: 0 auto;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .tabs {
-      display: flex;
-      width: 100%;
-      background: #fff;
-      border-bottom: 2px solid var(--color-border);
-      z-index: 20;
-      position: relative;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 15px 0 15px;
-      font-size: 1.09rem;
-      font-weight: 600;
-      color: var(--color-primary);
-      background: #fff;
-      border-bottom: 3px solid var(--color-border);
-      cursor: pointer;
-      user-select: none;
-      min-width: 1px;
-      white-space: nowrap;
-      transition: background .17s;
-    }
-    .tab.active {
-      color: #fff;
-      border-bottom-color: var(--color-primary);
-    }
-    .tab.active[data-tab="servis"] {
-      background: var(--color-primary);
-      border-bottom-color: var(--color-primary);
-    }
-    .tab.active[data-tab="bayi"] {
-      background: var(--color-blue);
-      border-bottom-color: var(--color-blue);
-    }
-    .filter-row {
-      width: calc(100% - 30px);
-      margin: 10px auto 7px auto;
-      padding: 15px 0 15px 0;
-      display: flex;
-      gap: 70px;
-      align-items: center;
-      justify-content: flex-start;
-      background: #fff8f2d8;
+    html, body { margin: 0; padding: 0; font-family: var(--font); background: var(--color-bg); width: 100vw; height: 100vh; min-height: 100vh; overflow: hidden;}
+    .container { max-width: 1000px; width: 100vw; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column;}
+    .tabs { display: flex; width: 100%; background: #fff; border-bottom: 2px solid var(--color-border); z-index: 20; position: relative;}
+    .tab { flex: 1; text-align: center; padding: 15px 0 15px; font-size: 1.09rem; font-weight: 600; color: var(--color-primary); background: #fff; border-bottom: 3px solid var(--color-border); cursor: pointer; user-select: none; min-width: 1px; white-space: nowrap; transition: background .17s;}
+    .tab.active { color: #fff; border-bottom-color: var(--color-primary);}
+    .tab.active[data-tab="servis"] { background: var(--color-primary); border-bottom-color: var(--color-primary);}
+    .tab.active[data-tab="bayi"] { background: var(--color-blue); border-bottom-color: var(--color-blue);}
+    .color-info-fixed {
+      position: absolute;
+      top: 54px;
+      right: 12px;
+      background: #fff8ed;
       border-radius: 10px;
-      border: 3px solid #ffe2c2;
-      font-weight: 700;
-      font-size: 1.07em;
-      color: #e36901;
+      box-shadow: 0 1px 10px #f9e0c088;
+      padding: 5px 12px 5px 8px;
+      z-index: 33;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .93em;
+      min-height: 26px;
+      min-width: 26px;
+      pointer-events: none;
+      transition: box-shadow .19s;
     }
-    .filter-label { margin-left: 12px; color: #ba6c01;}
-    .filter-select {
-      border: 1.4px solid var(--color-primary);
-      border-radius: 8px;
-      font-size: 1em;
-      padding: 6px 14px;
-      background: #fff;
-      color: #b76d14;
-      font-weight: 600;
-      outline: none;
-    }
-    .page {
-      flex: 1 1 auto;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      position: relative;
-      overflow: hidden;
-      background: var(--color-bg);
-      display: block;
-    }
-    #mapWrap {
-      width: 100%;
-      height: calc(100vh - 88px);
-      position: relative;
-      max-width: 540px;
-      margin: 0 auto;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    #mapLoading {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      background: #fff3eb; color: #c86e01; font-weight: 600; font-size: 1.13em;
-      padding: 22px 28px; border-radius: 14px; z-index: 222; box-shadow: 0 3px 22px #ffc98a38;
-    }
-    .modal-bg {
-      display: none;
-      position:fixed; left:0;top:0;width:100vw;height:100vh;z-index:9999;
-      background: rgba(41,18,0,0.23);
-      align-items: center; justify-content: center;
-      transition: opacity .18s;
-    }
+    .color-badge { display: inline-flex; align-items: center; gap: 3px; font-weight: 600; font-size: 0.97em;}
+    .color-dot { width: 11px; height: 11px; border-radius: 8px; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 2px #bbb;}
+    .page { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; position: relative; overflow: hidden; background: var(--color-bg); display: block;}
+    #mapWrap { width: 100%; height: calc(100vh - 51px); position: relative; max-width: 100vw; margin: 0 auto;}
+    #map { width: 100%; height: 100%; border-radius: 0; box-shadow: none;}
+    #mapLoading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff3eb; color: #c86e01; font-weight: 600; font-size: 1.13em; padding: 22px 28px; border-radius: 14px; z-index: 222; box-shadow: 0 3px 22px #ffc98a38;}
+    .modal-bg { display: none; position:fixed; left:0;top:0;width:100vw;height:100vh;z-index:9999; background: rgba(41,18,0,0.23); align-items: center; justify-content: center; transition: opacity .18s;}
     .modal-bg.active { display:flex; }
-    .modal-inner {
-      background: #fff7ee;
-      border-radius: 13px;
-      padding: 17px 14px 13px 17px;
-      min-width: 310px;
-      max-width: 95vw;
-      box-shadow: 0 7px 36px #d2630040;
-      position: relative;
-      animation: pop .16s;
-      margin: 20px;
-    }
+    .modal-inner { background: #fff7ee; border-radius: 13px; padding: 17px 14px 13px 17px; min-width: 310px; max-width: 95vw; box-shadow: 0 7px 36px #d2630040; position: relative; animation: pop .16s; margin: 20px;}
     @keyframes pop {0%{transform:scale(.92);} 100%{transform:scale(1);}}
-    .modal-close {
-      position:absolute; right:12px; top:9px; background:none; border:none; font-size:2.0em; color:#e07000; cursor:pointer; z-index:9;
-      line-height:1; font-weight:700;
-    }
+    .modal-close { position:absolute; right:12px; top:9px; background:none; border:none; font-size:2.0em; color:#e07000; cursor:pointer; z-index:9; line-height:1; font-weight:700;}
     .place-photo {width: 100%; max-height: 200px; border-radius: 11px; object-fit: cover; margin-bottom: 7px;}
     .modal-main-title {font-size: 1.18em; font-weight:700; color: var(--color-primary); margin-bottom: 6px;}
     .modal-main-title.bayi { color: var(--color-blue);}
     .modal-detail {color:#7b4716;font-size:.98em;margin-bottom:5px;}
     .modal-city {color:#b87904;font-size:.98em;margin-bottom:4px;}
-    .modal-actions {margin-top:8px;}
-    .modal-btn {
-      background: var(--color-primary); color:#fff; border:none;
-      padding: 8px 18px; border-radius: 9px; font-weight:600; font-size:1.07em;
-      margin-right:8px; margin-top:6px; cursor:pointer; box-shadow:none; outline:none;
-      display: inline-block;
-      text-decoration:none;
-    }
+    .modal-actions {margin-top:10px; text-align:center;}
+    .modal-btn { background: var(--color-primary); color:#fff; border:none; padding: 8px 18px; border-radius: 9px; font-weight:600; font-size:1.07em; margin-right:8px; margin-top:6px; cursor:pointer; box-shadow:none; outline:none; display: inline-block; text-decoration:none;}
     .modal-btn.bayi {background: var(--color-blue);}
     .modal-btn:active { opacity: 0.88; }
     .stars {color:#e08e1e;font-size:1.11em;margin-bottom:7px;letter-spacing:.08em;}
-    #routeInfoBox {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      width: 100vw;
-      max-width: 100vw;
-      margin: 0 auto;
-      z-index: 10001;
-      display: none;
-      pointer-events: none;
-    }
-    .route-info-inner {
-      background: var(--color-primary);
-      color: #fff;
-      border-radius: 18px 18px 0 0;
-      box-shadow: 0 -5px 22px #ffc98a70;
-      font-weight: 600;
-      font-size: 1.13em;
-      padding: 13px 11px 15px 18px;
-      text-align: center;
-      margin: 0 auto;
-      max-width: 650px;
-      width: 100vw;
-      min-width: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      pointer-events: auto;
-      transition: background .18s, box-shadow .18s;
-    }
+    #routeInfoBox { position: fixed; left: 0; bottom: 0; width: 100vw; max-width: 100vw; margin: 0 auto; z-index: 10001; display: none; pointer-events: none;}
+    .route-info-inner { background: var(--color-primary); color: #fff; border-radius: 18px 18px 0 0; box-shadow: 0 -5px 22px #ffc98a70; font-weight: 600; font-size: 1.13em; padding: 13px 11px 15px 18px; text-align: center; margin: 0 auto; max-width: 650px; width: 100vw; min-width: 220px; display: flex; align-items: center; justify-content: center; gap: 28px; pointer-events: auto; transition: background .18s, box-shadow .18s;}
     .route-info-inner.bayi {background: var(--color-blue);}
-    .route-dist, .route-dur {
-      font-size:1.06em;
-      margin-right: 6px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 500;
-    }
-    .route-center-btn {
-      background: #fff;
-      color: var(--color-primary);
-      border: none;
-      border-radius: 9px;
-      font-weight: 700;
-      font-size: .98em;
-      margin-left: 6px;
-      padding: 8px 12px;
-      cursor: pointer;
-      outline: none;
-      box-shadow: none;
-      transition: background .16s;
-      display: flex; align-items: center; gap:4px;
-    }
-    .route-info-inner.bayi .route-center-btn { color: var(--color-blue);}
-    .route-center-btn:active { background: #ffe2c2;}
-    .route-cancel-btn {
-      background: #fff;
-      color: var(--color-primary);
-      border: none;
-      border-radius: 9px;
-      font-weight: 700;
-      font-size: .98em;
-      margin-left: 9px;
-      padding: 8px 16px;
-      cursor: pointer;
-      outline: none;
-      box-shadow: none;
-      transition: background .16s;
-      display: flex; align-items: center; gap:5px;
-    }
+    .route-title {font-weight:700; font-size:1.11em; margin-right:18px; letter-spacing:.01em;}
+    .route-dist, .route-dur { font-size:1.06em; margin-right: 6px; display: flex; align-items: center; gap: 4px; font-weight: 500;}
+    .route-gmaps-btn { background:#fff0e2; color: #009300; border: none; border-radius: 9px; font-weight: 700; font-size: .98em; margin-left: 6px; padding: 8px 12px; cursor: pointer; outline: none; box-shadow: none; transition: background .16s; display: flex; align-items: center; gap:4px;}
+    .route-info-inner.bayi .route-gmaps-btn { color: var(--color-blue);}
+    .route-gmaps-btn:active { background: #ffe2c2;}
+    .route-cancel-btn { background: #fff; color: var(--color-primary); border: none; border-radius: 9px; font-weight: 700; font-size: .98em; margin-left: 9px; padding: 8px 16px; cursor: pointer; outline: none; box-shadow: none; transition: background .16s; display: flex; align-items: center; gap:5px;}
     .route-info-inner.bayi .route-cancel-btn { color: var(--color-blue);}
     .route-cancel-btn:active { background: #ffe2c2;}
     @media (max-width: 700px) {
       .container, #mapWrap { max-width: 100vw; }
-      .route-info-inner {
-        max-width: 100vw;
-        padding: 11px 4px 13px 7px;
-        font-size: 1.01em;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 9px;
-      }
+      .route-info-inner { max-width: 100vw; padding: 11px 4px 13px 7px; font-size: 1.01em; flex-direction: column; align-items: flex-start; gap: 9px;}
       #routeInfoBox {max-width: 100vw;}
+      .color-info-fixed {
+        position: fixed;
+        top: 60px;
+        right: 4px;
+        min-width: 12px;
+        min-height: 22px;
+        padding: 3px 6px 3px 5px;
+        font-size: .92em;
+        gap: 5px;
+      }
     }
-    @media (max-width: 1200px) {
-      .container {max-width: 100vw;}
-    }
+    @media (max-width: 1200px) { .container {max-width: 100vw;} }
   </style>
 </head>
 <body>
@@ -268,18 +97,7 @@
     <div class="tab active" data-tab="servis" onclick="setTab('servis')">Yetkili Servis</div>
     <div class="tab" data-tab="bayi" onclick="setTab('bayi')">Oto Bayi</div>
   </div>
-  <!-- FİLTRE BURADA -->
-  <div class="filter-row" id="filterRow">
-    <span class="filter-label">Vasıta Türü:</span>
-    <select class="filter-select" id="vehicleFilter">
-      <option value="Oto">Otomobil</option>
-      <option value="Ticari">Ticari Araç</option>
-      <option value="Kamyon">Kamyon / Tır</option>
-      <option value="Otobüs">Otobüs</option>
-      <option value="Motosiklet">Motosiklet</option>
-      <option value="Traktör">Traktör</option>
-    </select>
-  </div>
+  <div class="color-info-fixed" id="colorInfo"></div>
   <div class="page active" id="harita">
     <div id="mapWrap">
       <div id="map"></div>
@@ -291,29 +109,25 @@
 <div id="routeInfoBox"><div class="route-info-inner" id="routeInfoInner"></div></div>
 <script>
 let currentTab = 'servis';
-let currentVehicle = 'all';
-let map, placesServis = [], placesBayi = [], markers = [], userMarker = null, userPos = null;
+let map, markers = [], userMarker = null, userPos = null;
 let directionsService, directionsRenderer, activeRouteType = null, activeRouteDest = null, routeInterval = null;
 let modalOpen = false, activeRouteBounds = null;
+let routeInfoData = {name: '', lat: null, lng: null};
 
-const KEYWORDS = {
-  servis: {
-    all: "Oto Servis",
-    Oto: "Oto Servis",
-    Ticari: "Ticari Araç Servis",
-    Kamyon: "Kamyon Servis",
-    Motosiklet: "Motosiklet Servis",
-    Traktör: "Traktör Servis"
-  },
-  bayi: {
-    all: "Oto Bayi",
-    Oto: "Oto Bayi",
-    Ticari: "Ticari Araç Bayi",
-    Kamyon: "Kamyon Bayi",
-    Motosiklet: "Motosiklet Bayi",
-    Traktör: "Traktör Bayi"
-  }
-};
+const VEHICLE_TYPES = [
+  { keyword: "Oto Servis", label: "Otomobil", color: "#f27405", key: "oto", count: 0 },
+  { keyword: "Ticari Araç Servis", label: "Ticari", color: "#24c257", key: "ticari", count: 0 },
+  { keyword: "Kamyon Servis", label: "Kamyon", color: "#e51d1d", key: "kamyon", count: 0 },
+  { keyword: "Motosiklet Servis", label: "Motosiklet", color: "#171717", key: "moto", count: 0 },
+  { keyword: "Traktör Servis", label: "Traktör", color: "#ffd600", key: "traktor", count: 0 }
+];
+const VEHICLE_TYPES_BAYI = [
+  { keyword: "Oto Bayi", label: "Otomobil", color: "#f27405", key: "oto", count: 0 },
+  { keyword: "Ticari Araç Bayi", label: "Ticari", color: "#24c257", key: "ticari", count: 0 },
+  { keyword: "Kamyon Bayi", label: "Kamyon", color: "#e51d1d", key: "kamyon", count: 0 },
+  { keyword: "Motosiklet Bayi", label: "Motosiklet", color: "#171717", key: "moto", count: 0 },
+  { keyword: "Traktör Bayi", label: "Traktör", color: "#ffd600", key: "traktor", count: 0 }
+];
 
 function setTab(tab) {
   if(modalOpen) return;
@@ -324,35 +138,55 @@ function setTab(tab) {
   if (activeRouteType) updateRouteInfoBox();
 }
 
-document.getElementById('vehicleFilter').addEventListener('change', function() {
-  currentVehicle = this.value;
-  searchPlaces();
-});
-
 function searchPlaces() {
   if (!map || !userPos) return;
   const placesService = new google.maps.places.PlacesService(map);
   markers.forEach(m => m.setMap(null));
   markers = [];
-  if(currentTab==='servis'){
+  let vehicleTypes = currentTab === 'servis' ? VEHICLE_TYPES : VEHICLE_TYPES_BAYI;
+  vehicleTypes.forEach(type => type.count = 0);
+  vehicleTypes.forEach(type => {
     placesService.nearbySearch({
       location: userPos,
       radius: 30000,
-      keyword: KEYWORDS.servis[currentVehicle] || "Oto Servis"
+      keyword: type.keyword
     }, (results, status) => {
-      placesServis = (status === google.maps.places.PlacesServiceStatus.OK) ? results : [];
-      renderMarkers();
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        type.count = results.length;
+        results.forEach(place => {
+          addMarker(place, type.color, currentTab);
+        });
+      }
+      updateColorInfo();
     });
-  } else {
-    placesService.nearbySearch({
-      location: userPos,
-      radius: 30000,
-      keyword: KEYWORDS.bayi[currentVehicle] || "Oto Bayi"
-    }, (results, status) => {
-      placesBayi = (status === google.maps.places.PlacesServiceStatus.OK) ? results : [];
-      renderMarkers();
-    });
-  }
+  });
+}
+
+function updateColorInfo() {
+  let html = '';
+  let arr = currentTab === 'servis' ? VEHICLE_TYPES : VEHICLE_TYPES_BAYI;
+  arr.forEach(type => {
+    html += `<span class="color-badge"><span class="color-dot" style="background:${type.color};"></span>${type.label}<span style="opacity:.68;font-size:.97em;margin-left:1px;">(${type.count})</span></span>`;
+  });
+  document.getElementById('colorInfo').innerHTML = html;
+}
+
+function addMarker(place, color, tabType) {
+  const marker = new google.maps.Marker({
+    map,
+    position: place.geometry.location,
+    title: place.name,
+    icon: {
+      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+      scale: 6,
+      fillColor: color,
+      fillOpacity: 1,
+      strokeWeight: 1,
+      strokeColor: "#fff"
+    }
+  });
+  marker.addListener('click', ()=>showPlaceDetail(place.place_id, tabType));
+  markers.push(marker);
 }
 
 function initMap() {
@@ -382,30 +216,6 @@ function initMap() {
   });
 }
 
-function renderMarkers() {
-  markers.forEach(m => m.setMap(null));
-  markers = [];
-  const places = currentTab==='servis' ? placesServis : placesBayi;
-  if(!map) return;
-  places.forEach(place => {
-    const marker = new google.maps.Marker({
-      map,
-      position: place.geometry.location,
-      title: place.name,
-      icon: {
-        path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-        scale: 6,
-        fillColor: currentTab==='servis' ? "#f27405" : "#3483fa",
-        fillOpacity: 1,
-        strokeWeight: 1,
-        strokeColor: "#fff"
-      }
-    });
-    marker.addListener('click', ()=>showPlaceDetail(place.place_id, currentTab));
-    markers.push(marker);
-  });
-}
-
 function showPlaceDetail(placeId, type) {
   const modalBg = document.getElementById('modalBg');
   modalOpen = true;
@@ -424,7 +234,7 @@ function showPlaceDetail(placeId, type) {
     let stars = place.rating ? `<div class="stars">★ ${place.rating.toFixed(1)}</div>` : '';
     let address = place.formatted_address || place.vicinity || '';
     let phone = place.formatted_phone_number ? `<a href="tel:${place.formatted_phone_number.replace(/\s+/g,'')}" class="modal-btn${type==='bayi'?' bayi':''}">Ara</a>` : '';
-    let directionsBtn = `<button class="modal-btn${type==='bayi'?' bayi':''}" style="margin-top:9px;" onclick="calcRoute(${place.geometry.location.lat()},${place.geometry.location.lng()},'${place.name.replace(/'/g,"\\'")}', '${type}')">Rota Oluştur</button>`;
+    let gozatBtn = `<button class="modal-btn${type==='bayi'?' bayi':''}" style="margin-top:9px;" onclick="startRoutePreview('${place.name.replace(/'/g,"\\'")}', ${place.geometry.location.lat()}, ${place.geometry.location.lng()}, '${type}')">Göz At</button>`;
     modalBg.innerHTML = `
       <div class="modal-inner">
         <button class="modal-close" onclick="closeModal()">×</button>
@@ -434,31 +244,27 @@ function showPlaceDetail(placeId, type) {
           ${stars}
           <div class="modal-detail">${address}</div>
           ${place.formatted_phone_number?`<div class="modal-city"><b>Telefon:</b> ${place.formatted_phone_number}</div>`:""}
-          <div class="modal-actions">
-            ${directionsBtn}
-            ${phone}
-          </div>
+          <div class="modal-actions">${gozatBtn}${phone}</div>
         </div>
       </div>
     `;
   });
 }
+
 window.closeModal = function(){
   document.getElementById('modalBg').classList.remove('active');
   setTimeout(()=>{document.getElementById('modalBg').innerHTML='';modalOpen=false;}, 280);
 }
 
-window.calcRoute = function(destLat, destLng, destName, type){
-  if(!userPos){ alert('Konum alınamadı.'); return; }
+window.startRoutePreview = function(name, lat, lng, type) {
+  closeModal();
+  routeInfoData = {name, lat, lng, type};
   activeRouteType = type;
-  activeRouteDest = {lat: destLat, lng: destLng};
-  const polyColor = type==='bayi' ? "#3483fa" : "#f27405";
-  directionsRenderer.setOptions({polylineOptions:{strokeColor:polyColor,strokeWeight:5}});
+  activeRouteDest = {lat, lng};
   updateRouteLive();
   if(routeInterval) clearInterval(routeInterval);
   routeInterval = setInterval(updateRouteLive, 3000);
-  closeModal();
-};
+}
 
 function updateRouteLive(){
   if(!userPos || !activeRouteDest) return;
@@ -471,26 +277,18 @@ function updateRouteLive(){
     if(status === google.maps.DirectionsStatus.OK){
       directionsRenderer.setDirections(result);
       const leg = result.routes[0].legs[0];
-      // bounds ile fit için kaydet
       activeRouteBounds = result.routes[0].bounds;
-      showRouteInfoBox(leg.distance.text, leg.duration.text, activeRouteType);
+      showRouteInfoBox(routeInfoData.name, leg.distance.text, leg.duration.text, activeRouteType, routeInfoData.lat, routeInfoData.lng);
     }
   });
 }
 
-// YOLU ORTALAMA
-window.centerRoute = function(){
-  if(map && activeRouteBounds){
-    map.fitBounds(activeRouteBounds);
-  }
-}
-
-// GELİŞMİŞ ALT KUTU (şık, responsive, ek butonlu)
-function showRouteInfoBox(distance, duration, type){
+function showRouteInfoBox(title, distance, duration, type, lat, lng){
   const routeBox = document.getElementById('routeInfoBox');
   const routeInner = document.getElementById('routeInfoInner');
   routeInner.className = "route-info-inner"+(type==='bayi'?' bayi':'');
   routeInner.innerHTML = `
+    <span class="route-title">${title}</span>
     <span class="route-dist">
       <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M6.5 7a5.5 5.5 0 1 1 11 0c0 4.26-4.49 9.45-5.02 10.06a.75.75 0 0 1-1.14 0C10.99 16.45 6.5 11.26 6.5 7zm5.5-4a7.5 7.5 0 0 0-7.5 7.5c0 5.41 6.38 12.35 6.65 12.63a2.25 2.25 0 0 0 3.2 0c.27-.28 6.65-7.22 6.65-12.63A7.5 7.5 0 0 0 12 3z"/></svg>
       <b>Mesafe:</b> ${distance}
@@ -499,14 +297,11 @@ function showRouteInfoBox(distance, duration, type){
       <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.25A8.75 8.75 0 1 0 20.75 12 8.76 8.76 0 0 0 12 3.25zm0 16A7.25 7.25 0 1 1 19.25 12 7.26 7.26 0 0 1 12 19.25z"/><path fill="currentColor" d="M12 7.75a.75.75 0 0 1 .75.75v2.94l2.23 1.29a.75.75 0 0 1-.76 1.3l-2.43-1.41a.75.75 0 0 1-.39-.65V8.5A.75.75 0 0 1 12 7.75z"/></svg>
       <b>Süre:</b> ${duration}
     </span>
-    <button class="route-center-btn" onclick="centerRoute()">
-      <svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 6a1 1 0 0 1 1 1v3.586l2.293 2.293a1 1 0 1 1-1.415 1.415l-2.586-2.586A1 1 0 0 1 11 10V7a1 1 0 0 1 1-1zm0-4a10 10 0 1 1-7.07 2.93A10 10 0 0 1 12 2zm0 2A8 8 0 1 0 20 12a8 8 0 0 0-8-8z"/></svg>
-      Rota Ortala
+    <button class="route-gmaps-btn" onclick="goGoogleMaps(${lat},${lng})">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10.013 10.013 0 0 0 12 2Zm0 15a5 5 0 1 1 5-5a5.006 5.006 0 0 1-5 5Zm1-5V7a1 1 0 0 0-2 0v6a1 1 0 0 0 .293.707l4 4a1 1 0 1 0 1.414-1.414Z"/></svg>
+      Google Haritalar’da Yol Tarifi
     </button>
-    <button class="route-cancel-btn" onclick="cancelRoute()">
-      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M17.71 6.29a1 1 0 0 1 0 1.42L13.42 12l4.29 4.29a1 1 0 0 1-1.42 1.42L12 13.42l-4.29 4.29a1 1 0 0 1-1.42-1.42L10.58 12 6.29 7.71a1 1 0 1 1 1.42-1.42L12 10.58l4.29-4.29a1 1 0 0 1 1.42 0z"/></svg>
-      Rota İptal
-    </button>
+    <button class="route-cancel-btn" onclick="cancelRoute()">Kapat</button>
   `;
   routeBox.style.display = "block";
 }
@@ -518,20 +313,9 @@ window.cancelRoute = function(){
   routeInterval = null;
 };
 
-setInterval(()=>{
-  if (navigator.geolocation && activeRouteType) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const newUserPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      userPos = newUserPos;
-      if(userMarker) userMarker.setPosition(newUserPos);
-      if(activeRouteType && directionsRenderer && directionsRenderer.getDirections()){
-        const dir = directionsRenderer.getDirections();
-        const dest = dir.routes[0].legs[0].end_location;
-        window.calcRoute(dest.lat(), dest.lng(), '', activeRouteType);
-      }
-    });
-  }
-}, 3000);
+window.goGoogleMaps = function(lat, lng) {
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
+}
 
 window.initMap = initMap;
 </script>
